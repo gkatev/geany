@@ -2435,14 +2435,6 @@ static void join_paragraph(GeanyEditor *editor)
 {
 	ScintillaObject *sci = editor->sci;
 	gboolean sel;
-	gint column;
-
-	column = get_reflow_column(editor);
-	if (column == -1)
-	{
-		utils_beep();
-		return;
-	}
 
 	sci_start_undo_action(sci);
 	sel = sci_has_selection(sci);
