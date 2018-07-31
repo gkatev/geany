@@ -4362,7 +4362,7 @@ static void fold_all(GeanyEditor *editor, gboolean want_fold)
 {
 	gint lines, first, i;
 
-	if (editor == NULL || ! editor_prefs.folding)
+	if (editor == NULL)
 		return;
 
 	lines = sci_get_line_count(editor->sci);
