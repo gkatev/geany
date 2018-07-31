@@ -1368,6 +1368,49 @@ static void on_menu_project1_activate(GtkMenuItem *menuitem, gpointer user_data)
 						g_queue_get_length(ui_prefs.recent_projects_queue) > 0);
 }
 
+void on_menu_open_terminal(GtkMenuItem *menuitem, gpointer user_data)
+{
+	GeanyDocument *doc = document_get_current();
+	gchar *locale_term_cmd;
+	gchar *working_dir;
+
+	locale_term_cmd = utils_get_locale_from_utf8(tool_prefs.term_cmd);
+	utils_str_replace_all(&locale_term_cmd, "%c", "");
+
+	if (doc->file_name == NULL)
+		return;
+
+	working_dir = utils_get_locale_from_utf8(doc->file_name);
+
+	for (size_t i = strlen(working_dir); i >= 0; i--) {
+		int found = 0;
+
+		if (working_dir[i] == '/') found = 1;
+
+#ifdef G_OS_WIN32
+		if (working_dir[i] == '\\') found = 1;
+#endif
+
+		if (found)
+		{
+			working_dir[i+1] = '\0';
+			break;
+		}
+	}
+
+	if (!spawn_async(working_dir, locale_term_cmd, NULL, NULL, NULL, NULL))
+	{
+		gchar *utf8_term_cmd = utils_get_utf8_from_locale(locale_term_cmd);
+
+		ui_set_statusbar(TRUE, _("Cannot launch terminal. "
+			"Check the Terminal setting in Preferences"));
+
+		g_free(utf8_term_cmd);
+	}
+
+	g_free(locale_term_cmd);
+	g_free(working_dir);
+}
 
 void on_menu_open_selected_file1_activate(GtkMenuItem *menuitem, gpointer user_data)
 {
