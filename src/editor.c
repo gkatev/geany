@@ -4531,7 +4531,7 @@ void editor_strip_line_trailing_spaces(GeanyEditor *editor, gint line)
 		i--;
 		ch = sci_get_char_at(editor->sci, i);
 	}
-	if (i < (line_end - 1))
+	if (i > line_start && i < (line_end - 1))
 	{
 		sci_set_target_start(editor->sci, i + 1);
 		sci_set_target_end(editor->sci, line_end);
