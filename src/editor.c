@@ -1123,7 +1123,7 @@ static gboolean on_editor_notify(G_GNUC_UNUSED GObject *object, GeanyEditor *edi
 				/* get notified about undo changes */
 				document_undo_add(doc, UNDO_SCINTILLA, NULL);
 			}
-			if (editor_prefs.folding && (nt->modificationType & SC_MOD_CHANGEFOLD) != 0)
+			if (editor_prefs.folding && !editor_prefs.hide_fold_margin && (nt->modificationType & SC_MOD_CHANGEFOLD) != 0)
 			{
 				/* handle special fold cases, e.g. #1923350 */
 				fold_changed(sci, nt->line, nt->foldLevelNow, nt->foldLevelPrev);
@@ -4362,7 +4362,7 @@ static void fold_all(GeanyEditor *editor, gboolean want_fold)
 {
 	gint lines, first, i;
 
-	if (editor == NULL)
+	if (editor == NULL || !editor_prefs.folding)
 		return;
 
 	lines = sci_get_line_count(editor->sci);
@@ -5186,7 +5186,7 @@ void editor_apply_update_prefs(GeanyEditor *editor)
 	sci_set_symbol_margin(sci, editor_prefs.show_markers_margin);
 	sci_set_line_numbers(sci, editor_prefs.show_linenumber_margin);
 
-	sci_set_folding_margin_visible(sci, editor_prefs.folding);
+	sci_set_folding_margin_visible(sci, editor_prefs.folding && !editor_prefs.hide_fold_margin);
 
 	/* virtual space */
 	SSM(sci, SCI_SETVIRTUALSPACEOPTIONS, editor_prefs.show_virtual_space, 0);

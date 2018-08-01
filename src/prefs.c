@@ -621,6 +621,11 @@ static void prefs_init_dialog(void)
 	widget = ui_lookup_widget(ui_widgets.prefs_dialog, "check_folding");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), editor_prefs.folding);
 
+	widget = ui_lookup_widget(ui_widgets.prefs_dialog, "check_hide_fold_margin");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), editor_prefs.hide_fold_margin);
+	on_use_folding_toggled(GTK_TOGGLE_BUTTON(
+					ui_lookup_widget(ui_widgets.prefs_dialog, "check_folding")), NULL);
+
 	widget = ui_lookup_widget(ui_widgets.prefs_dialog, "check_unfold_children");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), editor_prefs.unfold_all_children);
 	on_use_folding_toggled(GTK_TOGGLE_BUTTON(
@@ -1063,6 +1068,10 @@ on_prefs_dialog_response(GtkDialog *dialog, gint response, gpointer user_data)
 
 		widget = ui_lookup_widget(ui_widgets.prefs_dialog, "check_folding");
 		editor_prefs.folding = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
+		widget = ui_lookup_widget(ui_widgets.prefs_dialog, "check_hide_fold_margin");
+		editor_prefs.hide_fold_margin = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
 		ui_update_fold_items();
 
 		widget = ui_lookup_widget(ui_widgets.prefs_dialog, "check_unfold_children");
@@ -1537,6 +1546,7 @@ static void on_use_folding_toggled(GtkToggleButton *togglebutton, gpointer user_
 {
 	gboolean sens = gtk_toggle_button_get_active(togglebutton);
 
+	gtk_widget_set_sensitive(ui_lookup_widget(ui_widgets.prefs_dialog, "check_hide_fold_margin"), sens);
 	gtk_widget_set_sensitive(ui_lookup_widget(ui_widgets.prefs_dialog, "check_unfold_children"), sens);
 }
 

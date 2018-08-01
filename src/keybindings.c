@@ -2610,12 +2610,12 @@ static gboolean cb_func_document_action(guint key_id)
 			editor_unfold_all(doc->editor);
 			break;
 		case GEANY_KEYS_DOCUMENT_TOGGLEFOLD:
-		{
-			gint line = sci_get_current_line(doc->editor->sci);
-			editor_toggle_fold(doc->editor, line, 0);
-
+			if (editor_prefs.folding)
+			{
+				gint line = sci_get_current_line(doc->editor->sci);
+				editor_toggle_fold(doc->editor, line, 0);
+			}
 			break;
-		}
 		case GEANY_KEYS_DOCUMENT_REMOVE_MARKERS:
 			on_remove_markers1_activate(NULL, NULL);
 			break;

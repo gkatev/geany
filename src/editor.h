@@ -113,6 +113,7 @@ typedef struct GeanyEditorPrefs
 	gboolean	line_wrapping;
 	gboolean	use_indicators;
 	gboolean	folding;
+	gboolean	hide_fold_margin;
 	gboolean	unfold_all_children;
 	gboolean	disable_dnd;
 	gboolean	use_tab_to_indent;	/* makes tab key indent instead of insert a tab char */
