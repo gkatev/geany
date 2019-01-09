@@ -119,7 +119,7 @@ symbol_menu;
 
 static void load_user_tags(GeanyFiletypeID ft_id);
 
-/* get the tags_ignore list, exported by tagmanager's options.c */
+/* get the tags_ignore list, exported by tagmanager's geany.c */
 extern gchar **c_tags_ignore;
 
 /* ignore certain tokens when parsing C-like syntax.
@@ -1933,15 +1933,23 @@ static void show_goto_popup(GeanyDocument *doc, GPtrArray *tags, gboolean have_b
 	GdkEventButton *button_event = NULL;
 	TMTag *tmtag;
 	guint i;
-
+	gchar **short_names, **file_names;
 	menu = gtk_menu_new();
+
+	/* If popup would show multiple files present a smart file list that allows
+	 * to easily distinguish the files while avoiding the file paths in their entirety */
+	file_names = g_new(gchar *, tags->len);
+	foreach_ptr_array(tmtag, i, tags)
+		file_names[i] = tmtag->file->file_name;
+	short_names = utils_strv_shorten_file_list(file_names, tags->len);
+	g_free(file_names);
 
 	foreach_ptr_array(tmtag, i, tags)
 	{
 		GtkWidget *item;
 		GtkWidget *label;
 		GtkWidget *image;
-		gchar *fname = g_path_get_basename(tmtag->file->file_name);
+		gchar *fname = short_names[i];
 		gchar *text;
 
 		if (! first && have_best)
@@ -1953,7 +1961,7 @@ static void show_goto_popup(GeanyDocument *doc, GPtrArray *tags, gboolean have_b
 
 		image = gtk_image_new_from_pixbuf(symbols_icons[get_tag_class(tmtag)].pixbuf);
 		label = g_object_new(GTK_TYPE_LABEL, "label", text, "use-markup", TRUE, "xalign", 0.0, NULL);
-		item = g_object_new(GTK_TYPE_IMAGE_MENU_ITEM, "image", image, "child", label, NULL);
+		item = g_object_new(GTK_TYPE_IMAGE_MENU_ITEM, "image", image, "child", label, "always-show-image", TRUE, NULL);
 		g_signal_connect_data(item, "activate", G_CALLBACK(on_goto_popup_item_activate),
 		                      tm_tag_ref(tmtag), (GClosureNotify) tm_tag_unref, 0);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -1964,6 +1972,7 @@ static void show_goto_popup(GeanyDocument *doc, GPtrArray *tags, gboolean have_b
 		g_free(text);
 		g_free(fname);
 	}
+	g_free(short_names);
 
 	gtk_widget_show_all(menu);
 
