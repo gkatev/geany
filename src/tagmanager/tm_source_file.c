@@ -1,6 +1,7 @@
 /*
 *
 *   Copyright (c) 2001-2002, Biswapesh Chattopadhyay
+*   Copyright 2005 The Geany contributors
 *
 *   This source code is released for free distribution under the terms of the
 *   GNU General Public License.
@@ -83,7 +84,7 @@ static int get_path_max(const char *path)
 }
 
 
-#ifdef G_OS_WIN32
+#if defined(G_OS_WIN32) && !defined(HAVE_REALPATH)
 /* realpath implementation for Windows found at http://bugzilla.gnome.org/show_bug.cgi?id=342926
  * this one is better than e.g. liberty's lrealpath because this one uses Win32 API and works
  * with special chars within the filename */
@@ -181,7 +182,13 @@ static gboolean init_tag(TMTag *tag, TMSourceFile *file, const ctagsTag *tag_ent
 	if (!tag_entry)
 		return FALSE;
 
-	type = tm_parser_get_tag_type(tag_entry->kindLetter, file->lang);
+	type = tm_parser_get_tag_type(tag_entry->kindLetter, tag_entry->lang);
+	if (file->lang != tag_entry->lang)  /* this is a tag from a subparser */
+	{
+		/* check for possible re-definition of subparser type */
+		type = tm_parser_get_subparser_type(file->lang, tag_entry->lang, type);
+	}
+
 	if (!tag_entry->name || type == tm_tag_undef_t)
 		return FALSE;
 
@@ -206,6 +213,8 @@ static gboolean init_tag(TMTag *tag, TMSourceFile *file, const ctagsTag *tag_ent
 	if ((tm_tag_macro_t == tag->type) && (NULL != tag->arglist))
 		tag->type = tm_tag_macro_with_arg_t;
 	tag->file = file;
+	/* redefine lang also for subparsers because the rest of Geany assumes that
+	 * tags from a single file are from a single language */
 	tag->lang = file->lang;
 	return TRUE;
 }
@@ -664,7 +673,7 @@ static bool ctags_new_tag(const ctagsTag *const tag,
 }
 
 /* Initializes a TMSourceFile structure from a file name. */
-static gboolean tm_source_file_init(TMSourceFile *source_file, const char *file_name, 
+static gboolean tm_source_file_init(TMSourceFile *source_file, const char *file_name,
 	const char* name)
 {
 	GStatBuf s;
@@ -799,15 +808,15 @@ gboolean tm_source_file_parse(TMSourceFile *source_file, guchar* text_buf, gsize
 		g_warning("Attempt to parse NULL file");
 		return FALSE;
 	}
-	
+
 	if (source_file->lang == TM_PARSER_NONE)
 	{
 		tm_tags_array_free(source_file->tags_array, FALSE);
 		return FALSE;
 	}
-	
+
 	file_name = source_file->file_name;
-	
+
 	if (use_buffer && (NULL == text_buf || 0 == buf_size))
 	{
 		/* Empty buffer, "parse" by setting empty tag array */

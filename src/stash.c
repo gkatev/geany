@@ -1,8 +1,7 @@
 /*
  *      stash.c - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2008-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
- *      Copyright 2008-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
+ *      Copyright 2008 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -127,6 +126,7 @@ struct StashGroup
 	const gchar *name;			/* group name to use in the keyfile */
 	GPtrArray *entries;			/* array of (StashPref*) */
 	gboolean various;		/* mark group for display/edit in stash treeview */
+	const gchar *prefix;	/* text to display for Various UI instead of name */
 	gboolean use_defaults;		/* use default values if there's no keyfile entry */
 };
 
@@ -428,10 +428,13 @@ G_DEFINE_BOXED_TYPE(StashGroup, stash_group, stash_group_dup, stash_group_free);
 
 
 /* Used for selecting groups passed to stash_tree_setup().
- * @c FALSE by default. */
-void stash_group_set_various(StashGroup *group, gboolean various)
+ * @param various @c FALSE by default.
+ * @param prefix @nullable Group prefix or @c NULL to use @c group->name. */
+void stash_group_set_various(StashGroup *group, gboolean various,
+	const gchar *prefix)
 {
 	group->various = various;
+	group->prefix = prefix;
 }
 
 
@@ -1115,6 +1118,7 @@ static void stash_tree_append_pref(StashGroup *group, StashPref *entry, GtkListS
 {
 	GtkTreeIter iter;
 	StashTreeValue *value;
+	gchar *text = NULL;
 
 	value = g_new0(StashTreeValue, 1);
 
@@ -1122,8 +1126,11 @@ static void stash_tree_append_pref(StashGroup *group, StashPref *entry, GtkListS
 	value->pref = entry;
 
 	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, STASH_TREE_NAME, entry->key_name,
+	text = g_strconcat(group->prefix ? group->prefix : group->name,
+		".", entry->key_name, NULL);
+	gtk_list_store_set(store, &iter, STASH_TREE_NAME, text,
 		STASH_TREE_VALUE, value, -1);
+	g_free(text);
 }
 
 

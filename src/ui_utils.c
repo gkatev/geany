@@ -1,9 +1,7 @@
 /*
  *      ui_utils.c - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2006-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
- *      Copyright 2006-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
- *      Copyright 2011-2012 Matthew Brush <mbrush(at)codebrainz(dot)ca>
+ *      Copyright 2006 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -38,6 +36,7 @@
 #include "filetypes.h"
 #include "geanymenubuttonaction.h"
 #include "keyfile.h"
+#include "keybindings.h"
 #include "main.h"
 #include "msgwindow.h"
 #include "prefs.h"
@@ -1192,7 +1191,8 @@ static void recent_project_activate_cb(GtkMenuItem *menuitem, G_GNUC_UNUSED gpoi
 	gchar *utf8_filename = ui_menu_item_get_text(menuitem);
 	gchar *locale_filename = utils_get_locale_from_utf8(utf8_filename);
 
-	if (project_ask_close() && project_load_file_with_session(locale_filename))
+	if (app->project && !project_close(FALSE)) {}
+	else if (project_load_file_with_session(locale_filename))
 		recent_file_loaded(utf8_filename, recent_get_recent_projects());
 
 	g_free(locale_filename);
@@ -1469,7 +1469,7 @@ void ui_update_view_editor_menu_items(void)
  *
  * @return @transfer{floating} The frame widget, setting the alignment container for
  * packing child widgets.
- * 
+ *
  * @deprecated 1.29: Use GTK API directly
  **/
 GEANY_API_SYMBOL
@@ -2098,6 +2098,7 @@ static void on_config_file_clicked(GtkWidget *widget, gpointer user_data)
 		gchar *global_file;
 		gchar *base_name = NULL;
 		gchar *global_content = NULL;
+		GeanyDocument *doc = NULL;
 
 		/* get the path inside app->configdir - can contain subdirectories */
 		if (g_str_has_prefix(file_name, app->configdir))
@@ -2117,8 +2118,17 @@ static void on_config_file_clicked(GtkWidget *widget, gpointer user_data)
 		if (g_file_test(global_file, G_FILE_TEST_EXISTS))
 			g_file_get_contents(global_file, &global_content, NULL, NULL);
 
-		document_new_file(utf8_filename, ft, global_content);
-
+		doc = document_new_file(utf8_filename, ft, global_content);
+		if (global_content)
+		{
+			sci_select_all(doc->editor->sci);
+			keybindings_send_command(GEANY_KEY_GROUP_FORMAT,
+				GEANY_KEYS_FORMAT_COMMENTLINETOGGLE);
+			sci_set_current_line(doc->editor->sci, 0);
+			document_set_text_changed(doc, FALSE);
+			sci_empty_undo_buffer(doc->editor->sci);
+			ui_document_show_hide(doc); /* update the document menu */
+		}
 		utils_free_pointers(4, utf8_filename, base_name, global_file, global_content, NULL);
 	}
 }
@@ -2325,14 +2335,12 @@ void ui_init_prefs(void)
 	StashGroup *group = stash_group_new(PACKAGE);
 
 	/* various prefs */
-	configuration_add_various_pref_group(group);
+	configuration_add_various_pref_group(group, "interface");
 
 	stash_group_add_boolean(group, &interface_prefs.show_symbol_list_expanders,
 		"show_symbol_list_expanders", TRUE);
 	stash_group_add_boolean(group, &interface_prefs.compiler_tab_autoscroll,
 		"compiler_tab_autoscroll", TRUE);
-	stash_group_add_boolean(group, &ui_prefs.allow_always_save,
-		"allow_always_save", FALSE);
 	stash_group_add_string(group, &ui_prefs.statusbar_template,
 		"statusbar_template", _(DEFAULT_STATUSBAR_TEMPLATE));
 	stash_group_add_boolean(group, &ui_prefs.new_document_after_close,

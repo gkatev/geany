@@ -1,9 +1,7 @@
 /*
  *      editor.c - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2005-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
- *      Copyright 2006-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
- *      Copyright 2009-2012 Frank Lanitz <frank(at)frank(dot)uvena(dot)de>
+ *      Copyright 2005 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -542,7 +540,7 @@ static void check_line_breaking(GeanyEditor *editor, gint pos)
 	gint line, lstart, col;
 	gchar c;
 
-	if (!editor->line_breaking)
+	if (!editor->line_breaking || sci_get_selection_mode(editor->sci) != SC_SEL_STREAM)
 		return;
 
 	col = sci_get_col_from_position(sci, pos);
@@ -4522,7 +4520,7 @@ void editor_strip_line_trailing_spaces(GeanyEditor *editor, gint line)
 	gchar ch = sci_get_char_at(editor->sci, i);
 
 	/* Diff hunks should keep trailing spaces */
-	if (sci_get_lexer(editor->sci) == SCLEX_DIFF)
+	if (editor->document->file_type->id == GEANY_FILETYPES_DIFF)
 		return;
 
 	while ((i >= line_start) && ((ch == ' ') || (ch == '\t')))
@@ -4593,19 +4591,20 @@ void editor_ensure_final_newline(GeanyEditor *editor)
 
 void editor_set_font(GeanyEditor *editor, const gchar *font)
 {
-	gint style, size;
+	gint style;
 	gchar *font_name;
 	PangoFontDescription *pfd;
+	gdouble size;
 
 	g_return_if_fail(editor);
 
 	pfd = pango_font_description_from_string(font);
-	size = pango_font_description_get_size(pfd) / PANGO_SCALE;
+	size = pango_font_description_get_size(pfd) / (gdouble) PANGO_SCALE;
 	font_name = g_strdup_printf("!%s", pango_font_description_get_family(pfd));
 	pango_font_description_free(pfd);
 
 	for (style = 0; style <= STYLE_MAX; style++)
-		sci_set_font(editor->sci, style, font_name, size);
+		sci_set_font_fractional(editor->sci, style, font_name, size);
 
 	g_free(font_name);
 

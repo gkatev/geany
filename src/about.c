@@ -1,9 +1,7 @@
 /*
  *      about.c - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2005-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
- *      Copyright 2006-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
- *      Copyright 2006-2012 Frank Lanitz <frank@frank.uvena.de>
+ *      Copyright 2005 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -45,7 +43,8 @@
 #define INFO "<span size=\"larger\" weight=\"bold\">%s</span>"
 #define CODENAME "<span weight=\"bold\">\"" GEANY_CODENAME "\"</span>"
 #define BUILDDATE "<span size=\"smaller\">%s</span>"
-#define COPYRIGHT _("Copyright (c) 2005-2018\nColomban Wendling\nNick Treleaven\nMatthew Brush\nEnrico Tröger\nFrank Lanitz\nAll rights reserved.")
+#define RUNTIME BUILDDATE
+#define COPYRIGHT _("Copyright (c) 2005\nThe Geany contributors")
 
 static const gchar *translators[][2] = {
 	{ "ar", "Fayssal Chamekh &lt;chamfay@gmail.com&gt;"},
@@ -83,7 +82,7 @@ static const gchar *translators[][2] = {
 			   "Rafael Peregrino da Silva &lt;rperegrino@linuxnewmedia.com.br&gt;"},
 	{ "ro", "Alex Eftimie &lt;alex@rosedu.org&gt;" },
 	{ "ru", "brahmann_ &lt;brahmann@lifec0re.net&gt;,\nNikita E. Shalaev &lt;nshalaev@eu.spb.ru&gt;" },
-	{ "sk", "Tomáš Vadina &lt;kyberdev@gmail.com&gt;" },
+	{ "sk", "Andrej Herceg &lt;chrono.i18n@gmail.com&gt;" },
 	{ "sl", "Jože Klepec &lt;joze.klepec@siol.net&gt;"},
 	{ "sv", "Tony Mattsson &lt;superxorn@gmail.com&gt;" },
 	{ "sr", "Nikola Radovanovic &lt;cobisimo@gmail.com&gt;"},
@@ -98,7 +97,8 @@ static const guint translators_len = G_N_ELEMENTS(translators);
 static const gchar *prev_translators[][2] = {
 	{ "es", "Damián Viano &lt;debian@damianv.com.ar&gt;\nNacho Cabanes &lt;ncabanes@gmail.com&gt;" },
 	{ "pl", "Jacek Wolszczak &lt;shutdownrunner@o2.pl&gt;\nJarosław Foksa &lt;jfoksa@gmail.com&gt;" },
-	{ "nl", "Kurt De Bree &lt;kdebree@telenet.be&gt;" }
+	{ "nl", "Kurt De Bree &lt;kdebree@telenet.be&gt;" },
+	{ "sk", "Tomáš Vadina &lt;kyberdev@gmail.com&gt;" }
 };
 static const guint prev_translators_len = G_N_ELEMENTS(prev_translators);
 
@@ -144,6 +144,7 @@ static GtkWidget *create_dialog(void)
 	GtkWidget *label_info;
 	GtkWidget *codename_label;
 	GtkWidget *builddate_label;
+	GtkWidget *runtime_label;
 	GtkWidget *url_button;
 	GtkWidget *cop_label;
 	GtkWidget *label;
@@ -241,6 +242,21 @@ static GtkWidget *create_dialog(void)
 	gtk_misc_set_padding(GTK_MISC(builddate_label), 2, 2);
 	gtk_widget_show(builddate_label);
 	gtk_box_pack_start(GTK_BOX(info_box), builddate_label, FALSE, FALSE, 0);
+
+	/* GTK+/GLib runtime version label */
+	runtime_label = gtk_label_new(NULL);
+	gtk_label_set_justify(GTK_LABEL(runtime_label), GTK_JUSTIFY_CENTER);
+	gtk_label_set_selectable(GTK_LABEL(runtime_label), TRUE);
+	gtk_label_set_use_markup(GTK_LABEL(runtime_label), TRUE);
+	g_snprintf(buffer2, sizeof(buffer2),
+		_("Using GTK+ v%u.%u.%u and GLib v%u.%u.%u runtime libraries"),
+		gtk_major_version, gtk_minor_version, gtk_micro_version,
+		glib_major_version, glib_minor_version, glib_micro_version);
+	g_snprintf(buffer, sizeof(buffer), RUNTIME, buffer2);
+	gtk_label_set_markup(GTK_LABEL(runtime_label), buffer);
+	gtk_misc_set_padding(GTK_MISC(runtime_label), 2, 2);
+	gtk_widget_show(runtime_label);
+	gtk_box_pack_start(GTK_BOX(info_box), runtime_label, FALSE, FALSE, 0);
 
 	box = gtk_hbutton_box_new();
 	url_button = gtk_button_new();

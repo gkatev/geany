@@ -1,8 +1,7 @@
 /*
  *      stash.h - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2008-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
- *      Copyright 2008-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
+ *      Copyright 2008 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -94,7 +93,8 @@ void stash_group_free_settings(StashGroup *group);
 
 #ifdef GEANY_PRIVATE
 
-void stash_group_set_various(StashGroup *group, gboolean write_once);
+void stash_group_set_various(StashGroup *group, gboolean various,
+	const gchar *prefix);
 
 void stash_group_set_use_defaults(StashGroup *group, gboolean use_defaults);
 

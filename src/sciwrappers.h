@@ -1,8 +1,7 @@
 /*
  *      sciwrappers.h - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2005-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
- *      Copyright 2006-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
+ *      Copyright 2005 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -216,6 +215,8 @@ gint				sci_text_width				(ScintillaObject *sci, gint styleNumber, const gchar *
 
 void				sci_move_selected_lines_down    (ScintillaObject *sci);
 void				sci_move_selected_lines_up      (ScintillaObject *sci);
+
+void				sci_set_font_fractional		(ScintillaObject *sci, gint style, const gchar *font, gdouble size);
 
 #endif /* GEANY_PRIVATE */
 

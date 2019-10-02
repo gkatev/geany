@@ -1,8 +1,7 @@
 /*
  *      filetypesprivate.h - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2008-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
- *      Copyright 2008-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
+ *      Copyright 2008 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -41,6 +40,7 @@ typedef struct GeanyFiletypePrivate
 	gboolean	xml_indent_tags; /* XML tag autoindentation, for HTML and XML filetypes */
 	GSList		*tag_files;
 	gboolean	warn_color_scheme;
+	gboolean	user_extensions;	// true if extensions were read from user config file
 
 	/* TODO: move to structure in build.h and only put a pointer here */
 	GeanyBuildCommand *filecmds;

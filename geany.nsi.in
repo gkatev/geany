@@ -1,8 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; geany.nsi - this file is part of Geany, a fast and lightweight IDE
 ;
-; Copyright 2007-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
-; Copyright 2007-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
+; Copyright 2007 The Geany contributors
 ;
 ; This program is free software; you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -27,6 +26,8 @@
 ; Do a Cyclic Redundancy Check to make sure the installer was not corrupted by the download
 CRCCheck force
 RequestExecutionLevel highest ; set execution level for Windows Vista
+; NSIS 3 Unicode support
+Unicode true
 
 ;;;;;;;;;;;;;;;;;;;
 ; helper defines  ;
@@ -51,16 +52,17 @@ VIProductVersion "${PRODUCT_VERSION_ID}"
 VIAddVersionKey "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey "FileVersion" "${PRODUCT_VERSION}"
 VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
-VIAddVersionKey "LegalCopyright" "Copyright 2005-2018 by the Geany developer team"
+VIAddVersionKey "LegalCopyright" "Copyright 2005 The Geany contributors"
 VIAddVersionKey "FileDescription" "${PRODUCT_NAME} Installer"
 
-BrandingText "$(^NAME) installer (NSIS 2.51)"
+BrandingText "$(^NAME) installer (NSIS 3.04)"
 InstallDir "$PROGRAMFILES\Geany"
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 SetCompressor /SOLID lzma
 ShowInstDetails hide
 ShowUnInstDetails hide
 XPStyle on
+ManifestSupportedOS all
 !ifdef INCLUDE_GTK
 OutFile "geany-${PRODUCT_VERSION}_setup.exe"
 !else
@@ -78,10 +80,10 @@ Var UNINSTDIR
 !include "MUI2.nsh"
 
 ;Reserve files used in .onInit, for faster start-up
-ReserveFile "${NSISDIR}\Plugins\System.dll"
-ReserveFile "${NSISDIR}\Plugins\UserInfo.dll"
-ReserveFile "${NSISDIR}\Plugins\InstallOptions.dll"
-ReserveFile "${NSISDIR}\Plugins\LangDLL.dll"
+ReserveFile "${NSISDIR}\Plugins\x86-unicode\System.dll"
+ReserveFile "${NSISDIR}\Plugins\x86-unicode\UserInfo.dll"
+ReserveFile "${NSISDIR}\Plugins\x86-unicode\InstallOptions.dll"
+ReserveFile "${NSISDIR}\Plugins\x86-unicode\LangDLL.dll"
 
 !define MUI_ABORTWARNING
 !define MUI_ICON "icons\geany.ico"
@@ -235,7 +237,7 @@ Section "GTK ${GTK_VERSION} Runtime Environment" SEC06
 	SetOutPath "$INSTDIR\lib"
 	File /r "gtk\lib\*"
 	SetOutPath "$INSTDIR\share"
-	File /r "gtk\share\*"
+	File /r /x "*.mo" "gtk\share\*"
 SectionEnd
 !endif
 

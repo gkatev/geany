@@ -110,7 +110,7 @@ To run Geany just type::
     $ geany
 
 on a console or use the applications menu from your desktop environment.
-There a few command line options. See the manual page of Geany or run::
+For command line options, see the manual page of Geany or run::
 
     $ geany --help
 
@@ -136,13 +136,3 @@ Ideas, questions, patches and bug reports
 See https://www.geany.org/.
 If you add something, or fix a bug, please create a pull request at
 https://github.com/geany/geany/. Also see the HACKING file.
-
-
-----
-
-| 2005-2018 by Enrico Tröger, Nick Treleaven, Colomban Wendling, Matthew Brush and Frank Lanitz
-| enrico(dot)troeger(at)uvena(dot)de
-| nick(dot)treleaven(at)btinternet(dot)com
-| ban(at)herbesfolles(dot)org
-| mbrush(at)codebrainz(dot)ca
-| frank(at)frank(dot)uvena(dot)de

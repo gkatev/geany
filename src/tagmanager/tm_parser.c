@@ -1,7 +1,7 @@
 /*
  *      tm_parser.c - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2016 Jiri Techet <techet(at)gmail(dot)com>
+ *      Copyright 2016 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -29,6 +29,20 @@ typedef struct
     const gchar kind;
     TMTagType type;
 } TMParserMapEntry;
+
+/* Allows remapping a subparser tag type to another type if there's a clash with
+ * the master parser tag type. Only subparser tag types explicitly listed within
+ * TMSubparserMapEntry maps are added to tag manager - tags with types not listed
+ * are discarded to prevent uncontrolled merging of tags from master parser and
+ * subparsers. */
+typedef struct
+{
+    TMTagType orig_type;
+    TMTagType new_type;
+} TMSubparserMapEntry;
+
+
+static GHashTable *subparser_map = NULL;
 
 
 static TMParserMapEntry map_C[] = {
@@ -242,6 +256,7 @@ static TMParserMapEntry map_JAVASCRIPT[] = {
 	{'p', tm_tag_member_t},
 	{'C', tm_tag_macro_t},
 	{'v', tm_tag_variable_t},
+	{'g', tm_tag_function_t},
 };
 
 /* not in universal-ctags */
@@ -287,20 +302,23 @@ static TMParserMapEntry map_HAXE[] = {
 	{'t', tm_tag_typedef_t},
 };
 
-/* not in universal-ctags */
 static TMParserMapEntry map_REST[] = {
-	{'n', tm_tag_namespace_t},
-	{'m', tm_tag_member_t},
-	{'d', tm_tag_macro_t},
-	{'v', tm_tag_variable_t},
+	{'c', tm_tag_namespace_t},
+	{'s', tm_tag_member_t},
+	{'S', tm_tag_macro_t},
+	{'t', tm_tag_variable_t},
+	{'T', tm_tag_undef_t},
 };
 
 static TMParserMapEntry map_HTML[] = {
 	{'a', tm_tag_member_t},
-	{'f', tm_tag_function_t},
-	{'n', tm_tag_namespace_t},
-	{'c', tm_tag_class_t},
-	{'v', tm_tag_variable_t},
+	{'h', tm_tag_namespace_t},
+	{'i', tm_tag_class_t},
+	{'j', tm_tag_variable_t},
+};
+
+static TMSubparserMapEntry subparser_HTML_javascript_map[] = {
+	{tm_tag_function_t, tm_tag_function_t},
 };
 
 static TMParserMapEntry map_F77[] = {
@@ -353,14 +371,16 @@ static TMParserMapEntry map_VALA[] = {
 /* not in universal-ctags */
 static TMParserMapEntry map_ACTIONSCRIPT[] = {
 	{'f', tm_tag_function_t},
-	{'l', tm_tag_field_t},
-	{'v', tm_tag_variable_t},
-	{'m', tm_tag_macro_t},
 	{'c', tm_tag_class_t},
 	{'i', tm_tag_interface_t},
-	{'p', tm_tag_package_t},
-	{'o', tm_tag_other_t},
-	{'r', tm_tag_prototype_t},
+	{'P', tm_tag_package_t},
+	{'m', tm_tag_method_t},
+	{'p', tm_tag_member_t},
+	{'v', tm_tag_variable_t},
+	{'l', tm_tag_variable_t},
+	{'C', tm_tag_macro_t},
+	{'I', tm_tag_externvar_t},
+	{'x', tm_tag_other_t},
 };
 
 /* not in universal-ctags */
@@ -405,11 +425,13 @@ static TMParserMapEntry map_R[] = {
 
 static TMParserMapEntry map_COBOL[] = {
 	{'d', tm_tag_variable_t},
+	{'D', tm_tag_interface_t},
 	{'f', tm_tag_function_t},
 	{'g', tm_tag_struct_t},
 	{'p', tm_tag_macro_t},
 	{'P', tm_tag_class_t},
 	{'s', tm_tag_namespace_t},
+	{'S', tm_tag_externvar_t},
 };
 
 static TMParserMapEntry map_OBJC[] = {
@@ -428,13 +450,14 @@ static TMParserMapEntry map_OBJC[] = {
 	{'M', tm_tag_macro_t},
 };
 
-/* not in universal-ctags */
 static TMParserMapEntry map_ASCIIDOC[] = {
-	{'n', tm_tag_namespace_t},
-	{'m', tm_tag_member_t},
-	{'d', tm_tag_macro_t},
-	{'v', tm_tag_variable_t},
-	{'s', tm_tag_struct_t},
+	{'c', tm_tag_namespace_t},
+	{'s', tm_tag_member_t},
+	{'S', tm_tag_macro_t},
+	{'t', tm_tag_variable_t},
+	{'T', tm_tag_struct_t},
+	{'u', tm_tag_undef_t},
+	{'a', tm_tag_undef_t},
 };
 
 /* not in universal-ctags */
@@ -587,6 +610,65 @@ gchar tm_parser_get_tag_kind(TMTagType type, TMParserType lang)
 }
 
 
+static void add_subparser(TMParserType lang, TMParserType sublang, TMSubparserMapEntry *map, guint map_size)
+{
+	guint i;
+	GPtrArray *mapping;
+	GHashTable *lang_map = g_hash_table_lookup(subparser_map, GINT_TO_POINTER(lang));
+
+	if (!lang_map)
+	{
+		lang_map = g_hash_table_new(g_direct_hash, g_direct_equal);
+		g_hash_table_insert(subparser_map, GINT_TO_POINTER(lang), lang_map);
+	}
+
+	mapping = g_ptr_array_new();
+	for (i = 0; i < map_size; i++)
+		g_ptr_array_add(mapping, &map[i]);
+
+	g_hash_table_insert(lang_map, GINT_TO_POINTER(sublang), mapping);
+}
+
+
+#define SUBPARSER_MAP_ENTRY(lang, sublang, map) add_subparser(TM_PARSER_##lang, TM_PARSER_##sublang, map, G_N_ELEMENTS(map))
+
+static void init_subparser_map(void)
+{
+	SUBPARSER_MAP_ENTRY(HTML, JAVASCRIPT, subparser_HTML_javascript_map);
+}
+
+
+TMTagType tm_parser_get_subparser_type(TMParserType lang, TMParserType sublang, TMTagType type)
+{
+	guint i;
+	GHashTable *lang_map;
+	GPtrArray *mapping;
+
+	if (!subparser_map)
+	{
+		subparser_map = g_hash_table_new(g_direct_hash, g_direct_equal);
+		init_subparser_map();
+	}
+
+	lang_map = g_hash_table_lookup(subparser_map, GINT_TO_POINTER(lang));
+	if (!lang_map)
+		return tm_tag_undef_t;
+
+	mapping = g_hash_table_lookup(lang_map, GINT_TO_POINTER(sublang));
+	if (!mapping)
+		return tm_tag_undef_t;
+
+	for (i = 0; i < mapping->len; i++)
+	{
+		TMSubparserMapEntry *entry = mapping->pdata[i];
+		if (entry->orig_type == type)
+			return entry->new_type;
+	}
+
+	return tm_tag_undef_t;
+}
+
+
 void tm_parser_verify_type_mappings(void)
 {
 	TMParserType lang;
@@ -687,9 +769,11 @@ gboolean tm_parser_has_full_context(TMParserType lang)
 	switch (lang)
 	{
 		/* These parsers include full hierarchy in the tag scope, separated by tm_parser_context_separator() */
+		case TM_PARSER_ACTIONSCRIPT:
 		case TM_PARSER_C:
 		case TM_PARSER_CPP:
 		case TM_PARSER_CSHARP:
+		case TM_PARSER_COBOL:
 		case TM_PARSER_D:
 		case TM_PARSER_FERITE:
 		case TM_PARSER_GLSL:

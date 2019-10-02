@@ -1,8 +1,7 @@
 /*
  *      sciwrappers.c - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2005-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
- *      Copyright 2006-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
+ *      Copyright 2005 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -940,6 +939,18 @@ gint sci_find_text(ScintillaObject *sci, gint flags, struct Sci_TextToFind *ttf)
 	return (gint) SSM(sci, SCI_FINDTEXT, (uptr_t) flags, (sptr_t) ttf);
 }
 
+/* * Sets the font for a particular style.
+ * @param sci Scintilla widget.
+ * @param style The style.
+ * @param font The font name.
+ * @param size The font (fractional) size. */
+void sci_set_font_fractional(ScintillaObject *sci, gint style, const gchar *font, gdouble size)
+{
+	SSM(sci, SCI_STYLESETFONT, (uptr_t) style, (sptr_t) font);
+
+	/* Adding 0.5 is for rounding. */
+	SSM(sci, SCI_STYLESETSIZEFRACTIONAL, (uptr_t) style, (sptr_t) (SC_FONT_SIZE_MULTIPLIER * size + 0.5));
+}
 
 /** Sets the font for a particular style.
  * @param sci Scintilla widget.
@@ -949,8 +960,7 @@ gint sci_find_text(ScintillaObject *sci, gint flags, struct Sci_TextToFind *ttf)
 GEANY_API_SYMBOL
 void sci_set_font(ScintillaObject *sci, gint style, const gchar *font, gint size)
 {
-	SSM(sci, SCI_STYLESETFONT, (uptr_t) style, (sptr_t) font);
-	SSM(sci, SCI_STYLESETSIZE, (uptr_t) style, size);
+	sci_set_font_fractional(sci, style, font, size);
 }
 
 

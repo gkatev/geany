@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
-AC_INIT([Geany], [1.35],
+AC_INIT([Geany], [1.37],
 		[https://github.com/geany/geany/issues])
 AC_CONFIG_SRCDIR([src/geany.h])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -52,7 +52,7 @@ AC_TYPE_SIZE_T
 AC_STRUCT_TM
 
 # Checks for library functions.
-AC_CHECK_FUNCS([fgetpos fnmatch mkstemp strerror strstr])
+AC_CHECK_FUNCS([fgetpos fnmatch mkstemp strerror strstr realpath])
 
 # Function checks for u-ctags
 AC_CHECK_FUNCS([strcasecmp stricmp], [break])
@@ -178,7 +178,6 @@ AC_CONFIG_FILES([
 		data/Makefile
 		doc/Makefile
 		doc/geany.1
-		geany.spec
 		geany.pc
 		geany.nsi
 		doc/Doxyfile

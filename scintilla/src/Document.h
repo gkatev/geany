@@ -126,11 +126,11 @@ struct StyledText {
 
 class HighlightDelimiter {
 public:
-	HighlightDelimiter() : isEnabled(false) {
+	HighlightDelimiter() noexcept : isEnabled(false) {
 		Clear();
 	}
 
-	void Clear() {
+	void Clear() noexcept {
 		beginFoldBlock = -1;
 		endFoldBlock = -1;
 		firstChangeableLineBefore = -1;
@@ -164,7 +164,7 @@ public:
 	bool isEnabled;
 };
 
-inline int LevelNumber(int level) noexcept {
+constexpr int LevelNumber(int level) noexcept {
 	return level & SC_FOLDLEVELNUMBERMASK;
 }
 
@@ -174,19 +174,39 @@ protected:
 	ILexer *instance;
 	bool performingStyle;	///< Prevent reentrance
 public:
-	explicit LexInterface(Document *pdoc_) : pdoc(pdoc_), instance(nullptr), performingStyle(false) {
+	explicit LexInterface(Document *pdoc_) noexcept : pdoc(pdoc_), instance(nullptr), performingStyle(false) {
 	}
 	virtual ~LexInterface() {
 	}
 	void Colourise(Sci::Position start, Sci::Position end);
 	virtual int LineEndTypesSupported();
-	bool UseContainerLexing() const {
+	bool UseContainerLexing() const noexcept {
 		return instance == nullptr;
 	}
 };
 
 struct RegexError : public std::runtime_error {
 	RegexError() : std::runtime_error("regex failure") {}
+};
+
+/**
+ * The ActionDuration class stores the average time taken for some action such as styling or
+ * wrapping a line. It is used to decide how many repetitions of that action can be performed
+ * on idle to maximize efficiency without affecting application responsiveness.
+ * The duration changes if the time for the action changes. For example, if a simple lexer is
+ * changed to a complex lexer. Changes are damped and clamped to avoid short periods of easy
+ * or difficult processing moving the value too far leading to inefficiency or poor user
+ * experience.
+ */
+
+class ActionDuration {
+	double duration;
+	const double minDuration;
+	const double maxDuration;
+public:
+	ActionDuration(double duration_, double minDuration_, double maxDuration_) noexcept;
+	void AddSample(size_t numberActions, double durationOfActions) noexcept;
+	double Duration() const noexcept;
 };
 
 /**
@@ -210,6 +230,7 @@ private:
 	int refCount;
 	CellBuffer cb;
 	CharClassify charClass;
+	CharacterCategoryMap charMap;
 	std::unique_ptr<CaseFolder> pcf;
 	Sci::Position endStyled;
 	int styleClock;
@@ -259,7 +280,7 @@ public:
 	bool useTabs;
 	bool tabIndents;
 	bool backspaceUnindents;
-	double durationStyleOneLine;
+	ActionDuration durationStyleOneLine;
 
 	std::unique_ptr<IDecorationList> decorations;
 
@@ -389,6 +410,8 @@ public:
 	bool IsLineEndPosition(Sci::Position position) const;
 	bool IsPositionInLineEnd(Sci::Position position) const;
 	Sci::Position VCHomePosition(Sci::Position position) const;
+	Sci::Position IndexLineStart(Sci::Line line, int lineCharacterIndex) const;
+	Sci::Line LineFromPositionIndex(Sci::Position pos, int lineCharacterIndex) const;
 
 	int SCI_METHOD SetLevel(Sci_Position line, int level) override;
 	int SCI_METHOD GetLevel(Sci_Position line) const override;
@@ -414,11 +437,16 @@ public:
 	void SetCaseFolder(CaseFolder *pcf_);
 	Sci::Position FindText(Sci::Position minPos, Sci::Position maxPos, const char *search, int flags, Sci::Position *length);
 	const char *SubstituteByPosition(const char *text, Sci::Position *length);
+	int LineCharacterIndex() const;
+	void AllocateLineCharacterIndex(int lineCharacterIndex);
+	void ReleaseLineCharacterIndex(int lineCharacterIndex);
 	Sci::Line LinesTotal() const noexcept;
 
 	void SetDefaultCharClasses(bool includeWordClass);
 	void SetCharClasses(const unsigned char *chars, CharClassify::cc newCharClass);
 	int GetCharsOfClass(CharClassify::cc characterClass, unsigned char *buffer) const;
+	void SetCharacterCategoryOptimization(int countCharacters);
+	int CharacterCategoryOptimization() const noexcept;
 	void SCI_METHOD StartStyling(Sci_Position position, char mask) override;
 	bool SCI_METHOD SetStyleFor(Sci_Position length, char style) override;
 	bool SCI_METHOD SetStyles(Sci_Position length, const char *styles) override;
@@ -482,6 +510,11 @@ public:
 			pdoc->BeginUndoAction();
 		}
 	}
+	// Deleted so UndoGroup objects can not be copied.
+	UndoGroup(const UndoGroup &) = delete;
+	UndoGroup(UndoGroup &&) = delete;
+	void operator=(const UndoGroup &) = delete;
+	UndoGroup &operator=(UndoGroup &&) = delete;
 	~UndoGroup() {
 		if (groupNeeded) {
 			pdoc->EndUndoAction();
@@ -548,7 +581,7 @@ public:
 	virtual void NotifyModifyAttempt(Document *doc, void *userData) = 0;
 	virtual void NotifySavePoint(Document *doc, void *userData, bool atSavePoint) = 0;
 	virtual void NotifyModified(Document *doc, DocModification mh, void *userData) = 0;
-	virtual void NotifyDeleted(Document *doc, void *userData) = 0;
+	virtual void NotifyDeleted(Document *doc, void *userData) noexcept = 0;
 	virtual void NotifyStyleNeeded(Document *doc, void *userData, Sci::Position endPos) = 0;
 	virtual void NotifyLexerChanged(Document *doc, void *userData) = 0;
 	virtual void NotifyErrorOccurred(Document *doc, void *userData, int status) = 0;

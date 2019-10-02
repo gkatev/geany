@@ -1,9 +1,7 @@
 /*
  *      symbols.c - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2006-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
- *      Copyright 2006-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
- *      Copyright 2011-2012 Colomban Wendling <ban(at)herbesfolles(dot)org>
+ *      Copyright 2006 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -492,10 +490,12 @@ static void add_top_level_items(GeanyDocument *doc)
 			tag_list_add_groups(tag_store,
 				&tv_iters.tag_class, _("Program"), ICON_CLASS,
 				&tv_iters.tag_function, _("File"), ICON_METHOD,
+				&tv_iters.tag_interface, _("Divisions"), ICON_NAMESPACE,
 				&tv_iters.tag_namespace, _("Sections"), ICON_NAMESPACE,
 				&tv_iters.tag_macro, _("Paragraph"), ICON_OTHER,
 				&tv_iters.tag_struct, _("Group"), ICON_STRUCT,
 				&tv_iters.tag_variable, _("Data"), ICON_VAR,
+				&tv_iters.tag_externvar, _("Copies"), ICON_NAMESPACE,
 				NULL);
 			break;
 		case GEANY_FILETYPES_CONF:
@@ -720,6 +720,7 @@ static void add_top_level_items(GeanyDocument *doc)
 		case GEANY_FILETYPES_AS:
 		{
 			tag_list_add_groups(tag_store,
+				&(tv_iters.tag_externvar), _("Imports"), ICON_NAMESPACE,
 				&(tv_iters.tag_namespace), _("Package"), ICON_NAMESPACE,
 				&(tv_iters.tag_interface), _("Interfaces"), ICON_STRUCT,
 				&(tv_iters.tag_class), _("Classes"), ICON_CLASS,
@@ -907,6 +908,18 @@ static const gchar *get_symbol_name(GeanyDocument *doc, const TMTag *tag, gboole
 static gchar *get_symbol_tooltip(GeanyDocument *doc, const TMTag *tag)
 {
 	gchar *utf8_name = editor_get_calltip_text(doc->editor, tag);
+
+	if (!utf8_name && tag->var_type &&
+		tag->type & (tm_tag_field_t | tm_tag_member_t | tm_tag_variable_t | tm_tag_externvar_t))
+	{
+		if (tag->lang != TM_PARSER_PASCAL && tag->lang != TM_PARSER_GO)
+			utf8_name = g_strconcat(tag->var_type, " ", tag->name, NULL);
+		else
+		{
+			const gchar *sep = tag->lang == TM_PARSER_PASCAL ? " : " : " ";
+			utf8_name = g_strconcat(tag->name, sep, tag->var_type, NULL);
+		}
+	}
 
 	/* encodings_convert_to_utf8_from_charset() fails with charset "None", so skip conversion
 	 * for None at this point completely */

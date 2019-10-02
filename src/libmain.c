@@ -1,8 +1,7 @@
 /*
  *      libmain.c - this file is part of Geany, a fast and lightweight IDE
  *
- *      Copyright 2005-2012 Enrico Tröger <enrico(dot)troeger(at)uvena(dot)de>
- *      Copyright 2006-2012 Nick Treleaven <nick(dot)treleaven(at)btinternet(dot)com>
+ *      Copyright 2005 The Geany contributors
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -1174,8 +1173,20 @@ gint main_lib(gint argc, gchar **argv)
 
 	ui_set_statusbar(TRUE, _("This is Geany %s."), main_get_version_string());
 	if (config_dir_result != 0)
-		ui_set_statusbar(TRUE, _("Configuration directory could not be created (%s)."),
-			g_strerror(config_dir_result));
+	{
+		const gchar *message = _("Configuration directory could not be created (%s).");
+		ui_set_statusbar(TRUE, message, g_strerror(config_dir_result));
+		g_warning(message, g_strerror(config_dir_result));
+	}
+#ifdef HAVE_SOCKET
+	if (socket_info.lock_socket == -1)
+	{
+		const gchar *message =
+			_("IPC socket could not be created, see Help->Debug Messages for details.");
+		ui_set_statusbar(TRUE, "%s", message);
+		g_warning("%s", message);
+	}
+#endif
 
 	/* apply all configuration options */
 	apply_settings();
