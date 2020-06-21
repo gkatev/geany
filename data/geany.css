@@ -27,7 +27,7 @@
 
 /* document status colors */
 #geany-document-status-changed {
-	color: #ff0000;
+	font-style: italic;
 }
 #geany-document-status-disk-changed {
 	color: #ff7f00;
