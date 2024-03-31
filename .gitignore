@@ -61,6 +61,7 @@ Makefile.in
 /m4/intl.m4
 /m4/intldir.m4
 /m4/intlmacosx.m4
+/m4/intltool.m4
 /m4/intmax.m4
 /m4/inttypes-pri.m4
 /m4/inttypes_h.m4
@@ -89,6 +90,9 @@ Makefile.in
 /stamp-h
 /stamp-h1
 /stamp-h.in
+/intltool-extract.in
+/intltool-merge.in
+/intltool-update.in
 /*.tar.*
 /TODO.*
 
