@@ -80,13 +80,10 @@
 #define GEANY_DEFAULT_TOOLS_MAKE		"make"
 #ifdef G_OS_WIN32
 #define GEANY_DEFAULT_TOOLS_TERMINAL	"cmd.exe /Q /C %c"
-#define GEANY_DEFAULT_TOOLS_FILE_MANAGER	"explorer.exe %d"
 #elif defined(__APPLE__)
 #define GEANY_DEFAULT_TOOLS_TERMINAL	"open -a terminal %c"
-#define GEANY_DEFAULT_TOOLS_FILE_MANAGER	"open %d"
 #else
 #define GEANY_DEFAULT_TOOLS_TERMINAL	"xterm -e \"/bin/sh %c\""
-#define GEANY_DEFAULT_TOOLS_FILE_MANAGER	"xdg-open %d"
 #endif
 #ifdef __APPLE__
 #define GEANY_DEFAULT_TOOLS_BROWSER		"open -a safari"
@@ -613,7 +610,6 @@ static void save_dialog_prefs(GKeyFile *config)
 
 	/* tools settings */
 	g_key_file_set_string(config, "tools", "terminal_cmd", tool_prefs.term_cmd ? tool_prefs.term_cmd : "");
-	g_key_file_set_string(config, "tools", "file_manager_cmd", tool_prefs.file_manager_cmd ? tool_prefs.file_manager_cmd : "");
 	g_key_file_set_string(config, "tools", "browser_cmd", tool_prefs.browser_cmd ? tool_prefs.browser_cmd : "");
 	g_key_file_set_string(config, "tools", "grep_cmd", tool_prefs.grep_cmd ? tool_prefs.grep_cmd : "");
 	g_key_file_set_string(config, PACKAGE, "context_action_cmd", tool_prefs.context_action_cmd);
@@ -1061,7 +1057,6 @@ static void load_dialog_prefs(GKeyFile *config)
 			SETPTR(cmd, g_strdup(GEANY_DEFAULT_TOOLS_TERMINAL));
 	}
 	tool_prefs.term_cmd = cmd;
-	tool_prefs.file_manager_cmd = utils_get_setting_string(config, "tools", "file_manager_cmd", GEANY_DEFAULT_TOOLS_FILE_MANAGER);
 	tool_prefs.browser_cmd = utils_get_setting_string(config, "tools", "browser_cmd", GEANY_DEFAULT_TOOLS_BROWSER);
 	tool_prefs.grep_cmd = utils_get_setting_string(config, "tools", "grep_cmd", GEANY_DEFAULT_TOOLS_GREP);
 
