@@ -62,6 +62,25 @@ static void attachPromiseModifier (int promise,
 								   void *data);
 
 
+static bool havePromise (const struct promise *p)
+{
+	for (int i = 0; i < promise_count; i++)
+	{
+		struct promise *q = promises + i;
+		if (p->lang == q->lang &&
+			p->startLine == q->startLine && p->startColumn == q->startColumn)
+		{
+			error (WARNING, "redundant promise: %s start(line: %lu, column: %ld, srcline: %lu), end(line: %lu, column: %ld)",
+			       q->lang != LANG_IGNORE? getLanguageName(q->lang): "*",
+			       q->startLine, q->startColumn, q->sourceLineOffset,
+			       q->endLine, q->endColumn);
+
+			return true;
+		}
+	}
+	return false;
+}
+
 int  makePromise   (const char *parser,
 		    unsigned long startLine, long startColumn,
 		    unsigned long endLine, long endColumn,
@@ -129,6 +148,9 @@ int  makePromise   (const char *parser,
 	}
 
 	p->modifiers = NULL;
+
+	if (havePromise (p))
+		return -1;
 
 	r = promise_count;
 	promise_count++;
