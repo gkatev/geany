@@ -16,6 +16,7 @@
 #include "promise_p.h"
 #include "ptrarray.h"
 #include "debug.h"
+#include "read.h"
 #include "read_p.h"
 #include "trashbox.h"
 #include "xtag.h"
@@ -70,7 +71,8 @@ static bool havePromise (const struct promise *p)
 		if (p->lang == q->lang &&
 			p->startLine == q->startLine && p->startColumn == q->startColumn)
 		{
-			error (WARNING, "redundant promise: %s start(line: %lu, column: %ld, srcline: %lu), end(line: %lu, column: %ld)",
+			error (WARNING, "redundant promise when parsing %s: %s start(line: %lu, column: %ld, srcline: %lu), end(line: %lu, column: %ld)",
+			       getInputFileName (),
 			       q->lang != LANG_IGNORE? getLanguageName(q->lang): "*",
 			       q->startLine, q->startColumn, q->sourceLineOffset,
 			       q->endLine, q->endColumn);

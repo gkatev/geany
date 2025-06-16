@@ -1490,9 +1490,9 @@ extern bool   pushArea (
 	return true;
 
 fail:
-	error (WARNING, "Failed to push area when parsing stream: IO error or invalid offsets: "
+	error (WARNING, "Failed to push area when parsing %s: IO error or invalid offsets: "
 	       "start(line: %lu, column: %ld, srcline: %lu), end(line: %lu, column: %ld)",
-	       startLine, startColumn, sourceLineOffset, endLine, endColumn);
+	       getInputFileName (), startLine, startColumn, sourceLineOffset, endLine, endColumn);
 	mio_setpos (File.mio, &original);
 	return false;
 }
