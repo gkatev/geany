@@ -86,6 +86,7 @@ extern void setCurrentDirectory (void);
 extern fileStatus *eStat (const char *const fileName);
 extern void eStatFree (fileStatus *status);
 extern bool doesFileExist (const char *const fileName);
+extern bool doesDirectoryExist (const char *const fileName);
 extern bool doesExecutableExist (const char *const fileName);
 extern bool isRecursiveLink (const char* const dirName);
 extern bool isSameFile (const char *const name1, const char *const name2);
@@ -96,6 +97,6 @@ extern char* absoluteDirname (char *file);
 extern char* relativeFilename (const char *file, const char *dir);
 extern MIO *tempFile (const char *const mode, char **const pName);
 
-extern char* baseFilenameSansExtensionNew (const char *const fileName, const char *const templateExt);
+extern char* filenameSansExtensionNew (const char *const fileName, const char *const templateExt);
 
 #endif  /* CTAGS_MAIN_ROUTINES_PRIVATE_H */

@@ -429,7 +429,7 @@ extern void setCurrentDirectory (void) /* TODO */
 		CurrentDirectory = xMalloc ((size_t) (PATH_MAX + 1), char);
 	buf = getcwd (CurrentDirectory, PATH_MAX);
 	if (buf == NULL)
-		perror ("");
+		error (FATAL | PERROR, "failed in getcwd()");
 	if (! isPathSeparator (CurrentDirectory [strlen (CurrentDirectory) - (size_t) 1]))
 	{
 		sprintf (CurrentDirectory + strlen (CurrentDirectory), "%c",
@@ -478,6 +478,12 @@ extern void eStatFree (fileStatus *status)
 		eFree (status->name);
 		status->name = NULL;
 	}
+}
+
+extern bool doesDirectoryExist (const char *const fileName)
+{
+	fileStatus *status = eStat (fileName);
+	return status->exists && status->isDirectory;
 }
 
 extern bool doesFileExist (const char *const fileName)
@@ -651,22 +657,17 @@ extern const char *fileExtension (const char *const fileName)
 	return extension;
 }
 
-extern char* baseFilenameSansExtensionNew (const char *const fileName,
-					   const char *const templateExt)
+extern char* filenameSansExtensionNew (const char *const fileName,
+									   const char *const templateExt)
 {
-	const char *pDelimiter;
-	const char *const base = baseFilename (fileName);
-	char* shorten_base;
+	Assert (templateExt);
+	Assert (fileName);
 
-	pDelimiter = strrchr (base, templateExt[0]);
+	const char *pDelimiter = strrstr (fileName, templateExt);
 
 	if (pDelimiter && (strcmp (pDelimiter, templateExt) == 0))
-	{
-		shorten_base = eStrndup (base, pDelimiter - base);
-		return shorten_base;
-	}
-	else
-		return NULL;
+		return eStrndup (fileName, pDelimiter - fileName);
+	return NULL;
 }
 
 extern bool isAbsolutePath (const char *const path)
