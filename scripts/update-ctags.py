@@ -3,6 +3,7 @@
 import glob
 import os
 import shutil
+import subprocess
 import sys
 
 if len(sys.argv) != 3:
@@ -55,6 +56,14 @@ os.chdir(srcdir)
 print('Copying main... ({} files)'.format(len(main_src_files)))
 for f in main_src_files:
     shutil.copy(f, dstdir + '/main')
+
+os.chdir(dstdir)
+patches = glob.glob('patches/*.patch')
+if patches:
+    print('Applying local patches...')
+    for patch in patches:
+        subprocess.run(['git', 'apply', '--', patch], check=True,
+                       stdout=subprocess.DEVNULL)
 
 main_diff = set(main_dst_files) - set(main_src_files)
 if main_diff:
