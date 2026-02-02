@@ -1097,10 +1097,12 @@ static TMParserMapEntry map_CLOJURE[] = {
 	{'Y', tm_tag_undef_t},      // unknown
 	{'f', tm_tag_function_t},   // function
 	{'n', tm_tag_namespace_t},  // namespace
+	{'m', tm_tag_macro_t},      // macro
 };
 static TMParserMapGroup group_CLOJURE[] = {
 	{N_("Namespaces"), TM_ICON_NAMESPACE, tm_tag_namespace_t},
 	{N_("Functions"), TM_ICON_METHOD, tm_tag_function_t},
+	{N_("Macros"), TM_ICON_MACRO, tm_tag_macro_t},
 };
 
 static TMParserMapEntry map_LISP[] = {
