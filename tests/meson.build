@@ -165,6 +165,7 @@ ctags_tests = [
 	'ctags/directives.c.tags',
 	'ctags/dopbl2.f.tags',
 	'ctags/dotted-names.json.tags',
+	'ctags/echo-tag.php.tags',
 	'ctags/enum.c.tags',
 	'ctags/enum.f90.tags',
 	'ctags/enum.java.tags',

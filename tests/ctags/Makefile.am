@@ -165,6 +165,7 @@ test_sources = \
 	directives.c					\
 	dopbl2.f						\
 	dotted-names.json				\
+	echo-tag.php					\
 	enum.c							\
 	enum.f90						\
 	enum.java						\
