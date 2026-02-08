@@ -137,6 +137,7 @@ test_sources = \
 	combined.html					\
 	combined.php					\
 	common.f						\
+	comment-in-js-2.html			\
 	complex-return.js				\
 	continuation.f90				\
 	continuation.mak				\

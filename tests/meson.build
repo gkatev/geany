@@ -137,6 +137,7 @@ ctags_tests = [
 	'ctags/combined.html.tags',
 	'ctags/combined.php.tags',
 	'ctags/common.f.tags',
+	'ctags/comment-in-js-2.html.tags',
 	'ctags/complex-return.js.tags',
 	'ctags/continuation.f90.tags',
 	'ctags/continuation.mak.tags',
