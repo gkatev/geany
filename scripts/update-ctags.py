@@ -25,7 +25,12 @@ print('Copying parsers... ({} files)'.format(len(parser_dst_files)))
 for f in parser_dst_files:
     shutil.copy(f, dstdir + '/parsers')
 
-cxx_parser_src_files = glob.glob('cxx/*.c') + glob.glob('cxx/*.h')
+cxx_parser_src_files_excludes = [
+    'cxx/cxx_jni.c',
+]
+cxx_parser_src_files = [f for f in glob.glob('cxx/*.c') + glob.glob('cxx/*.h')
+                        if (f in cxx_parser_dst_files or
+                            f not in cxx_parser_src_files_excludes)]
 print('Copying cxx parser files... ({} files)'.format(len(cxx_parser_src_files)))
 for f in cxx_parser_src_files:
     shutil.copy(f, dstdir + '/parsers/cxx')
@@ -39,17 +44,27 @@ for f in optlib_parser_dst_files:
 
 print('Copying dsl files...')
 for f in ['dsl/es.c', 'dsl/es.h', 'dsl/optscript.c', 'dsl/optscript.h']:
-	shutil.copy(srcdir + '/' + f, dstdir + '/' + f)
+    shutil.copy(srcdir + '/' + f, dstdir + '/' + f)
 
 print('Copying libreadtags files...')
 for f in ['libreadtags/readtags.c', 'libreadtags/readtags.h']:
-	shutil.copy(srcdir + '/' + f, dstdir + '/' + f)
+    shutil.copy(srcdir + '/' + f, dstdir + '/' + f)
 
-os.chdir(srcdir)
-main_src_files = glob.glob('main/*.c') + glob.glob('main/*.h')
 os.chdir(dstdir)
 main_dst_files = glob.glob('main/*.c') + glob.glob('main/*.h')
+os.chdir(srcdir)
+# files that should not be copied over (not used by the parts of CTags we use),
+# unless they were already present in the local copy
+main_src_files_excludes = [
+    'main/fname.c',
+    'main/fname.h',
+    'main/intern.c',
+    'main/intern.h',
+]
+main_src_files = [f for f in glob.glob('main/*.c') + glob.glob('main/*.h')
+                  if f in main_dst_files or f not in main_src_files_excludes]
 
+os.chdir(dstdir)
 for f in main_dst_files:
     os.remove(f)
 os.chdir(srcdir)
